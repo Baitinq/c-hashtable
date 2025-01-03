@@ -1,4 +1,4 @@
-CC = gcc
+CC = zig cc
 CFLAGS = -Wall -g
 SRC = src/main.c src/hashtable.c
 OBJ = $(SRC:.c=.o)

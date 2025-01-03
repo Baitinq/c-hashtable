@@ -18,6 +18,7 @@
     in
       pkgs.mkShell {
         buildInputs = with pkgs; [
+            zig
             gcc
             gnumake
             valgrind
