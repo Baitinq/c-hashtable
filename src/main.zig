@@ -38,6 +38,6 @@ test "removing element" {
     const data: i32 = 4;
     _ = hashtable.hashtable_put(ht, @constCast("key"), @constCast(&data));
     _ = hashtable.hashtable_remove(ht, @constCast("key"));
-    const res: ?*anyopaque = hashtable.hashtable_get(ht, @constCast("key"));
+    const res = hashtable.hashtable_get(ht, @constCast("key"));
     try std.testing.expectEqual(null, res);
 }
