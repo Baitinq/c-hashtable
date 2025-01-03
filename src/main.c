@@ -33,6 +33,20 @@ int main(int argc, char** argv) {
 	res = hashtable_get(ht, "b");
 
 	printf("Result: %s\n", res);
+	
+	struct test {
+		int value;
+	};
+
+	struct test example = {
+		.value = 7
+	};
+	
+	hashtable_put(ht, "b", (void*)&example);
+
+	struct test* res2 = hashtable_get(ht, "b");
+
+	printf("Result: %d\n", res2->value);
 
 	hashtable_deinit(&ht);
 
