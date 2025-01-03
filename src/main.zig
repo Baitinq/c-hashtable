@@ -24,8 +24,10 @@ pub fn main() !void {
 }
 
 test "simple test" {
-    var list = std.ArrayList(i32).init(std.testing.allocator);
-    defer list.deinit(); // try commenting this out and see if zig detects the memory leak!
-    try list.append(42);
-    try std.testing.expectEqual(@as(i32, 42), list.pop());
+    var ht = hashtable.hashtable_init();
+    defer _ = hashtable.hashtable_deinit(&ht);
+    const data: i32 = 4;
+    _ = hashtable.hashtable_put(ht, @constCast("key"), @constCast(&data));
+    const res: *align(1) i32 = @ptrCast(hashtable.hashtable_get(ht, @constCast("key")));
+    try std.testing.expectEqual(@as(i32, 4), res.*);
 }
