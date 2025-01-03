@@ -18,14 +18,13 @@ struct {
 
 struct {
 	HashTableBucket* buckets;
-	size_t buckets_length;
+	size_t capacity;
 } typedef HashTableImpl;
 
 static int hash(char* key, size_t bucket_len) {
 	int sum = 0;
 	while(*key != '\0') {
-		sum += *key;
-		*key++;
+		sum += *key++;
 	}
 
 	return sum % bucket_len;
@@ -36,7 +35,7 @@ HashTable hashtable_init() {
 
 	int capacity = 8; 
 	ht->buckets = (HashTableBucket*) calloc(sizeof(HashTableBucket), capacity);
-	ht->buckets_length = capacity;
+	ht->capacity = capacity;
 	
 	return (HashTable) ht;
 }
@@ -44,7 +43,7 @@ HashTable hashtable_init() {
 int hashtable_deinit(HashTable* ht) {
 	HashTableImpl* ht_impl = (HashTableImpl*) *ht;
 
-	for (int i = 0; i < ht_impl->buckets_length; ++i) {
+	for (int i = 0; i < ht_impl->capacity; ++i) {
 		HashTableBucket bucket = ht_impl->buckets[i];
 		free(bucket.data);
 	}
@@ -58,7 +57,7 @@ int hashtable_deinit(HashTable* ht) {
 void* hashtable_get(HashTable ht, char* key) {
 	HashTableImpl* ht_impl = (HashTableImpl*) ht;
 
-	int index = hash(key, ht_impl->buckets_length);
+	int index = hash(key, ht_impl->capacity);
 
 	HashTableBucket bucket = ht_impl->buckets[index];
 
@@ -73,9 +72,11 @@ void* hashtable_get(HashTable ht, char* key) {
 int hashtable_put(HashTable ht, char* key, void* val) {
 	HashTableImpl* ht_impl = (HashTableImpl*) ht;
 
-	int index = hash(key, ht_impl->buckets_length);
+	int index = hash(key, ht_impl->capacity);
 	HashTableBucket* bucket = &ht_impl->buckets[index];
 
+
+	//TODO: reuse the deleted?
 	for (int i = 0; i < bucket->length; ++i) {
 		HashTableData* data = &bucket->data[i];
 		if (strcmp(data->key, key) == 0) {
@@ -88,12 +89,13 @@ int hashtable_put(HashTable ht, char* key, void* val) {
 
 	//otherwise, realloc
 	bucket->length++;
-	bucket->data = realloc(bucket->data, bucket->length);
+	bucket->data = realloc(bucket->data, sizeof(HashTableData) * bucket->length);
 
-	HashTableData newData;
-	newData.key = key;
-	newData.data = val;
-	newData.deleted = 0;
+	HashTableData newData = {
+		.key = key,
+		.data = val,
+		.deleted = 0
+	};
 	bucket->data[bucket->length - 1] = newData;
 
 	return 0;
@@ -102,14 +104,13 @@ int hashtable_put(HashTable ht, char* key, void* val) {
 int hashtable_remove(HashTable ht, char* key) {
 	HashTableImpl* ht_impl = (HashTableImpl*) ht;
 
-	int index = hash(key, ht_impl->buckets_length);
+	int index = hash(key, ht_impl->capacity);
 	HashTableBucket* bucket = &ht_impl->buckets[index];
 
 	for (int i = 0; i < bucket->length; ++i) {
 		HashTableData* data = &bucket->data[i];
 		if (strcmp(data->key, key) == 0) {
 			data->deleted = 1;
-			
 			return 0;
 		}
 	}

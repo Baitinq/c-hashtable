@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
 	res = hashtable_get(ht, "aa");
 
 	printf("Result: %s\n", res);
-	
+
 	res = hashtable_get(ht, "b");
 
 	printf("Result: %s\n", res);
