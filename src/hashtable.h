@@ -7,8 +7,10 @@ HashTable hashtable_init();
 
 int hashtable_deinit(HashTable*);
 
-int hashtable_put(HashTable, char, void*);
+int hashtable_put(HashTable, char*, void*);
 
-void* hashtable_get(HashTable, char);
+int hashtable_remove(HashTable, char*);
+
+void* hashtable_get(HashTable, char*);
 
 #endif
