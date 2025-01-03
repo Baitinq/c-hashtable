@@ -1,0 +1,31 @@
+const std = @import("std");
+
+const hashtable = @cImport({
+    @cInclude("hashtable.c");
+});
+
+pub fn main() !void {
+    std.debug.print("Testing hashmap!\n", .{});
+
+    var ht = hashtable.hashtable_init();
+    defer _ = hashtable.hashtable_deinit(&ht);
+
+    const Example = struct {
+        data: i32 align(1),
+    };
+
+    const data = Example{
+        .data = 7,
+    };
+
+    _ = hashtable.hashtable_put(ht, @constCast("key"), @constCast(&data));
+    const res: *Example = @ptrCast(hashtable.hashtable_get(ht, @constCast("key")));
+    std.debug.print("Result: {d}\n", .{res.*.data});
+}
+
+test "simple test" {
+    var list = std.ArrayList(i32).init(std.testing.allocator);
+    defer list.deinit(); // try commenting this out and see if zig detects the memory leak!
+    try list.append(42);
+    try std.testing.expectEqual(@as(i32, 42), list.pop());
+}
