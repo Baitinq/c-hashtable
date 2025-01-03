@@ -30,10 +30,9 @@ static int hash(char* key, size_t bucket_len) {
 	return sum % bucket_len;
 }
 
-HashTable hashtable_init() {
+HashTable hashtable_init(size_t capacity) {
 	HashTableImpl* ht = (HashTableImpl*) malloc(sizeof(HashTableImpl));
 
-	int capacity = 8; 
 	ht->buckets = (HashTableBucket*) calloc(sizeof(HashTableBucket), capacity);
 	ht->capacity = capacity;
 	

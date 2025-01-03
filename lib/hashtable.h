@@ -3,7 +3,7 @@
 
 void typedef *HashTable;
 
-HashTable hashtable_init();
+HashTable hashtable_init(size_t);
 
 int hashtable_deinit(HashTable*);
 

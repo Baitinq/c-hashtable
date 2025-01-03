@@ -7,7 +7,7 @@ const hashtable = @cImport({
 pub fn main() !void {
     std.debug.print("Testing hashmap!\n", .{});
 
-    var ht = hashtable.hashtable_init();
+    var ht = hashtable.hashtable_init(8);
     defer _ = hashtable.hashtable_deinit(&ht);
 
     const Example = struct {
@@ -24,7 +24,7 @@ pub fn main() !void {
 }
 
 test "simple test" {
-    var ht = hashtable.hashtable_init();
+    var ht = hashtable.hashtable_init(8);
     defer _ = hashtable.hashtable_deinit(&ht);
     const data: i32 = 4;
     _ = hashtable.hashtable_put(ht, @constCast("key"), @constCast(&data));
@@ -33,7 +33,7 @@ test "simple test" {
 }
 
 test "removing element" {
-    var ht = hashtable.hashtable_init();
+    var ht = hashtable.hashtable_init(8);
     defer _ = hashtable.hashtable_deinit(&ht);
     const data: i32 = 4;
     _ = hashtable.hashtable_put(ht, @constCast("key"), @constCast(&data));
