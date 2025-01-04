@@ -41,3 +41,38 @@ test "removing element" {
     const res = hashtable.hashtable_get(ht, @constCast("key"));
     try std.testing.expectEqual(null, res);
 }
+
+test "fuzzing" {
+    try std.testing.fuzz(struct {
+        pub fn func(source: []const u8) !void {
+            if (source.len == 0) return;
+            std.debug.print("source: {s}", .{source});
+            var ht = hashtable.hashtable_init(8);
+            defer _ = hashtable.hashtable_deinit(&ht);
+            var i: usize = 0;
+            while (i + 2 < source.len) : (i += 2) {
+                const data: i32 = 4;
+                const operation: u8 = source[i];
+                const key: [*c]u8 = @constCast(@as([2]u8, .{ source[i + 1], 0 })[0..]);
+                const value: u8 = source[i + 2];
+
+                switch (operation % 3) {
+                    0 => {
+                        _ = hashtable.hashtable_get(ht, key);
+                    },
+                    1 => {
+                        _ = hashtable.hashtable_put(ht, key, @constCast(&value));
+                    },
+                    2 => {
+                        _ = hashtable.hashtable_remove(ht, key);
+                    },
+                    else => unreachable,
+                }
+
+                _ = hashtable.hashtable_put(ht, @constCast("key"), @constCast(&data));
+                const res: *align(1) i32 = @ptrCast(hashtable.hashtable_get(ht, @constCast("key")));
+                try std.testing.expectEqual(4, res.*);
+            }
+        }
+    }.func, .{});
+}
