@@ -46,10 +46,10 @@ test "fuzzing" {
     try std.testing.fuzz(struct {
         pub fn func(source: []const u8) !void {
             if (source.len == 0) return;
-            std.debug.print("source: {s}", .{source});
-            var ht = hashtable.hashtable_init(8);
+            const capacity: u8 = if (source[0] == 0) 1 else source[0];
+            var ht = hashtable.hashtable_init(capacity);
             defer _ = hashtable.hashtable_deinit(&ht);
-            var i: usize = 0;
+            var i: usize = 1;
             while (i + 2 < source.len) : (i += 2) {
                 const data: i32 = 4;
                 const operation: u8 = source[i];
