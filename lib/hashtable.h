@@ -7,7 +7,7 @@ HashTable hashtable_init(size_t);
 
 int hashtable_deinit(HashTable*);
 
-int hashtable_put(HashTable, char*, void*);
+int hashtable_put(HashTable, char*, void*, size_t);
 
 int hashtable_remove(HashTable, char*);
 

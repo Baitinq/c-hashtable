@@ -18,7 +18,7 @@ pub fn main() !void {
         .data = 7,
     };
 
-    _ = hashtable.hashtable_put(ht, @constCast("key"), @constCast(&data));
+    _ = hashtable.hashtable_put(ht, @constCast("key"), @constCast(&data), @sizeOf(Example));
     const res: *Example = @ptrCast(hashtable.hashtable_get(ht, @constCast("key")));
     std.debug.print("Result: {d}\n", .{res.*.data});
 }
@@ -27,7 +27,7 @@ test "simple test" {
     var ht = hashtable.hashtable_init(8);
     defer _ = hashtable.hashtable_deinit(&ht);
     const data: i32 = 4;
-    _ = hashtable.hashtable_put(ht, @constCast("key"), @constCast(&data));
+    _ = hashtable.hashtable_put(ht, @constCast("key"), @constCast(&data), @sizeOf(i32));
     const res: *align(1) i32 = @ptrCast(hashtable.hashtable_get(ht, @constCast("key")));
     try std.testing.expectEqual(@as(i32, 4), res.*);
 }
@@ -36,7 +36,7 @@ test "removing element" {
     var ht = hashtable.hashtable_init(8);
     defer _ = hashtable.hashtable_deinit(&ht);
     const data: i32 = 4;
-    _ = hashtable.hashtable_put(ht, @constCast("key"), @constCast(&data));
+    _ = hashtable.hashtable_put(ht, @constCast("key"), @constCast(&data), @sizeOf(i32));
     _ = hashtable.hashtable_remove(ht, @constCast("key"));
     const res = hashtable.hashtable_get(ht, @constCast("key"));
     try std.testing.expectEqual(null, res);
@@ -79,7 +79,7 @@ test "fuzzing" {
                     },
                     1 => {
                         std.debug.print("Putting key {any} - {d}\n", .{ key, key.* });
-                        _ = hashtable.hashtable_put(ht, key, @constCast(&value));
+                        _ = hashtable.hashtable_put(ht, key, @constCast(&value), @sizeOf(u8));
                         try reference_hashmap.put(key, @constCast(&value));
                     },
                     2 => {

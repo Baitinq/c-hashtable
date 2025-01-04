@@ -44,6 +44,11 @@ int hashtable_deinit(HashTable* ht) {
 
 	for (int i = 0; i < ht_impl->capacity; ++i) {
 		HashTableBucket bucket = ht_impl->buckets[i];
+		for (int j = 0; j < bucket.length; ++j) {
+			HashTableData data = bucket.data[j];
+			free(data.key);
+			free(data.data);
+		}
 		free(bucket.data);
 	}
 
@@ -68,7 +73,7 @@ void* hashtable_get(HashTable ht, char* key) {
 	return NULL;
 }
 
-int hashtable_put(HashTable ht, char* key, void* val) {
+int hashtable_put(HashTable ht, char* key, void* val, size_t val_size) {
 	HashTableImpl* ht_impl = (HashTableImpl*) ht;
 
 	int index = hash(key, ht_impl->capacity);
@@ -91,10 +96,11 @@ int hashtable_put(HashTable ht, char* key, void* val) {
 	bucket->data = realloc(bucket->data, sizeof(HashTableData) * bucket->length);
 
 	HashTableData newData = {
-		.key = key,
-		.data = val,
+		.key = strdup(key),
+		.data = malloc(val_size),
 		.deleted = 0
 	};
+	memcpy(newData.data, val, val_size);
 	bucket->data[bucket->length - 1] = newData;
 
 	return 0;
