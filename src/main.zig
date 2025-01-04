@@ -42,6 +42,7 @@ test "removing element" {
     try std.testing.expectEqual(null, res);
 }
 
+const allocator = std.heap.page_allocator;
 test "fuzzing" {
     try std.testing.fuzz(struct {
         pub fn func(source: []const u8) !void {
@@ -49,29 +50,49 @@ test "fuzzing" {
             const capacity: u8 = if (source[0] == 0) 1 else source[0];
             var ht = hashtable.hashtable_init(capacity);
             defer _ = hashtable.hashtable_deinit(&ht);
+
+            std.debug.print("START!\n", .{});
+
+            var reference_hashmap = std.AutoHashMap([*c]u8, *u8).init(allocator); //TODO: testing allocator
+
             var i: usize = 1;
             while (i + 2 < source.len) : (i += 2) {
-                const data: i32 = 4;
                 const operation: u8 = source[i];
-                const key: [*c]u8 = @constCast(@as([2]u8, .{ source[i + 1], 0 })[0..]);
+                const rawkey = try allocator.alloc(u8, 2); //TODO: Do we actually need this?
+                rawkey[0] = source[i + 1];
+                rawkey[1] = 0; // Null terminator
                 const value: u8 = source[i + 2];
+
+                std.debug.print("Rawkey: {any}\n", .{rawkey.ptr});
+
+                const key: [*c]u8 = @ptrCast(rawkey);
+
+                std.debug.print("Key: ptr {any} - value {d}\n", .{ key, key.* });
 
                 switch (operation % 3) {
                     0 => {
-                        _ = hashtable.hashtable_get(ht, key);
+                        // std.debug.print("Getting key {any}\n", .{key});
+                        const ret: ?*u8 = @ptrCast(hashtable.hashtable_get(ht, key));
+                        const reference_ret: ?*u8 = reference_hashmap.get(key);
+                        // std.debug.print("Reference get value: {any}\n", .{reference_ret});
+                        try std.testing.expectEqual(reference_ret, ret);
                     },
                     1 => {
+                        std.debug.print("Putting key {any} - {d}\n", .{ key, key.* });
                         _ = hashtable.hashtable_put(ht, key, @constCast(&value));
+                        try reference_hashmap.put(key, @constCast(&value));
                     },
                     2 => {
-                        _ = hashtable.hashtable_remove(ht, key);
+                        std.debug.print("Removing key {any} - {d}\n", .{ key, key.* });
+                        const ret = hashtable.hashtable_remove(ht, key);
+                        const reference_ret = reference_hashmap.remove(key);
+                        const a: i32 = if (reference_ret) 1 else 0;
+                        try std.testing.expectEqual(a, ret);
                     },
                     else => unreachable,
                 }
-
-                _ = hashtable.hashtable_put(ht, @constCast("key"), @constCast(&data));
-                const res: *align(1) i32 = @ptrCast(hashtable.hashtable_get(ht, @constCast("key")));
-                try std.testing.expectEqual(4, res.*);
+                //we cannot free or it will reuse the same memory and also doesnt make sense
+                // allocator.free(rawkey);
             }
         }
     }.func, .{});

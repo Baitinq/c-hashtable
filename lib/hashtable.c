@@ -108,9 +108,9 @@ int hashtable_remove(HashTable ht, char* key) {
 
 	for (int i = 0; i < bucket->length; ++i) {
 		HashTableData* data = &bucket->data[i];
-		if (strcmp(data->key, key) == 0) {
+		if (!data->deleted && strcmp(data->key, key) == 0) {
 			data->deleted = 1;
-			return 0;
+			return 1;
 		}
 	}
 
