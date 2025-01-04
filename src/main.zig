@@ -58,20 +58,14 @@ test "fuzzing" {
             var i: usize = 1;
             while (i + 2 < source.len) : (i += 2) {
                 const operation: u8 = source[i];
-                const rawkey = try allocator.alloc(u8, 2); //TODO: Do we actually need this?
-                rawkey[0] = source[i + 1];
-                rawkey[1] = 0; // Null terminator
+                const key: [*c]u8 = @constCast(@as([2]u8, .{ source[i + 1], 0 })[0..]);
                 const value: u8 = source[i + 2];
 
-                std.debug.print("Rawkey: {any}\n", .{rawkey.ptr});
-
-                const key: [*c]u8 = @ptrCast(rawkey);
-
-                std.debug.print("Key: ptr {any} - value {d}\n", .{ key, key.* });
+                // std.debug.print("Key: ptr {any} - value {d}\n", .{ key, key.* });
 
                 switch (operation % 3) {
                     0 => {
-                        // std.debug.print("Getting key {any}\n", .{key});
+                        std.debug.print("Getting key {any}\n", .{key});
                         const ret: ?*u8 = @ptrCast(hashtable.hashtable_get(ht, key));
                         const reference_ret: ?*u8 = reference_hashmap.get(key);
                         // std.debug.print("Reference get value: {any}\n", .{reference_ret});
