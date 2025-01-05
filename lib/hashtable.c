@@ -79,12 +79,12 @@ int hashtable_put(HashTable ht, char* key, void* val, size_t val_size) {
 	int index = hash(key, ht_impl->capacity);
 	HashTableBucket* bucket = &ht_impl->buckets[index];
 
-
 	//TODO: reuse the deleted?
 	for (int i = 0; i < bucket->length; ++i) {
 		HashTableData* data = &bucket->data[i];
 		if (strcmp(data->key, key) == 0) {
-			data->data = val;
+			data->data = realloc(data->data, val_size);
+			memcpy(data->data, val, val_size);
 			data->deleted = 0;
 			return 0;
 		}
