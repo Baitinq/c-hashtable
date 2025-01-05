@@ -60,7 +60,7 @@ test "fuzzing" {
                 const key: [*c]u8 = @constCast(@as([2]u8, .{ source[i + 1], 0 })[0..]);
                 const value: [*c]u8 = @constCast(@as([2]u8, .{ source[i + 2], 0 })[0..]);
 
-                switch (operation % 2) {
+                switch (operation % 3) {
                     0 => {
                         const ret: ?[*]u8 = @ptrCast(hashtable.hashtable_get(ht, key));
                         const reference_ret: ?[]const u8 = reference_hashmap.get(key[0..2]);
@@ -73,6 +73,10 @@ test "fuzzing" {
                     1 => {
                         _ = hashtable.hashtable_put(ht, key, @constCast(value), @sizeOf(u8) * 2);
                         try reference_hashmap.put(key[0..2], @as([*]u8, value)[0..2]);
+                    },
+                    2 => {
+                        _ = hashtable.hashtable_remove(ht, key);
+                        reference_hashmap.remove(key[0..2]);
                     },
                     else => unreachable,
                 }
